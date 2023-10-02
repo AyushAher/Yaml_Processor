@@ -1,0 +1,25 @@
+# Sample YAML Configuration for Project Setup
+name: sampleYaml  # Name of the YAML configuration
+
+version: 1  # Version of the YAML configuration
+
+gitUrl: https://github.com/AyushAher/Blog  # URL of the Git repository
+
+services:
+  # List of services and their configurations
+  - name: Node-Api  # Service Name
+    srcPath: c:\\as\\as  # Source path for the service
+    port:  # List of desired ports the service might run on
+      - 3000
+      - 3001
+
+  - name: .net
+    srcPath: c:\\as\\as
+    port:
+      - 71009
+      - 71010
+
+steps:
+  # Configuration steps to configure the operating system
+  - sudo stop service {{services.web$1.name}}  # Stop a service based on a template variable
+  - git clone {{gitUrl}}  # Clone the Git repository from the specified URL
