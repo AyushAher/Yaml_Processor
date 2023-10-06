@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useState} from 'react';
 import axios from 'axios';
 
 const FileUpload: React.FC = () => {
@@ -10,7 +10,7 @@ const FileUpload: React.FC = () => {
         }
     };
 
-    const handleUpload = async (e) => {
+    const handleUpload = async (e:any) => {
         e.preventDefault();
         if (file) {
             try {
