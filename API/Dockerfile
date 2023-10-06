@@ -12,4 +12,4 @@ RUN pip install -r requirements.txt
 EXPOSE 80
 
 # Run app.py when the container launches
-CMD ["python", "app.py"]
+ENTRYPOINT ["python3", "app.py"]
