@@ -16,6 +16,7 @@ body {
     height: calc(100vh - 50px);
     overflow-y: hidden;
     padding: 50px;
+    background-color: #21252940;
 }
 
 

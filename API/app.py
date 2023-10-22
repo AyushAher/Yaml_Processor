@@ -12,5 +12,15 @@ uploader = FileUploader(app)
 def home():
     return "Fuck You!"
 
+@app.route('/process')
+def process_yaml():
+    with open('sample.yaml', 'r') as file:
+        # Read the entire content of the file into a string
+        file_contents = file.read()
+        process_data = ProcessYAML(file_contents)
+        file.close()
+
+    return process_data.process_yaml()
+
 if __name__ == '__main__':
     app.run()
