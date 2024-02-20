@@ -10,8 +10,7 @@ uploader = FileUploader(app)
 # Define additional routes and functionality for your Flask app
 @app.route('/')
 def home():
-    
-    return "Fuck You!"
+    return "Modify the steps in sample.yaml file to execute them."
 
 @app.route('/process')
 def process_yaml():
@@ -21,7 +20,7 @@ def process_yaml():
         process_data = ProcessYAML(file_contents)
         file.close()
 
-    return "OK. Still Fuck You."
+    return "OK. No error occurred. Fuck You."
 
 if __name__ == '__main__':
-    app.run()
+    app.run(port=5001)
