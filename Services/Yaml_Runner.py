@@ -1,55 +1,91 @@
 import re
 import yaml
+import shlex
 import subprocess
 
+
 class YamlRunner:
-    def __init__(self, template):
-        self.template = template
-        self.data = yaml.safe_load(template)
-        # Parse the template variable using the provided data
-        parsed_result = self.parse_template_variable()
-        parsed_result_yaml = yaml.safe_load(parsed_result)
 
-        steps_lst = parsed_result_yaml['steps']
+    def __init__(self, template: str):
+        try:
+            # Load YAML safely
+            self.template = template
+            self.data = yaml.safe_load(template)
 
-        for step in steps_lst:
-            [*step_cmd] = step.split(' ')
-            self.run_subprocess(step_cmd)
+            if not isinstance(self.data, dict):
+                raise ValueError("Invalid YAML format")
 
-    @staticmethod
-    def run_subprocess(step):
-        print("Executing command:", step)
-        process = subprocess.Popen(step, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        output, error = process.communicate()
-        if process.returncode == 0:
-            print("Output:")
-            print(output.decode())
-        else:
-            print("Error occurred:", error.decode())
+            # Resolve template variables
+            parsed_template = self.parse_template_variable()
 
-    # Function to parse the template variable
+            # Parse again after template resolution
+            parsed_yaml = yaml.safe_load(parsed_template)
+
+            if "steps" not in parsed_yaml:
+                raise ValueError("YAML must contain a 'steps' section")
+
+            steps = parsed_yaml["steps"]
+
+            if not isinstance(steps, list):
+                raise ValueError("'steps' must be a list")
+
+            for step in steps:
+                self.execute_step(step)
+
+        except Exception as e:
+            raise RuntimeError(f"YAML processing failed: {str(e)}")
+
+    def execute_step(self, step: str):
+        if not isinstance(step, str):
+            raise ValueError(f"Invalid step format: {step}")
+
+        print(f"\nExecuting step: {step}")
+
+        # Safe command parsing
+        cmd = shlex.split(step)
+
+        try:
+            result = subprocess.run(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                shell=False,
+                text=True,
+                check=True
+            )
+
+            if result.stdout:
+                print("Output:")
+                print(result.stdout)
+
+        except subprocess.CalledProcessError as e:
+            print("Error occurred:")
+            print(e.stderr)
+            raise
+
     def parse_template_variable(self):
-        # Define a regular expression pattern to match the template variable
         pattern = r'{{(.*?)}}'
 
         def replace_variable(match):
-            # Extract the variable name from the matched pattern
             variable_name = match.group(1).strip()
             path_lst = variable_name.split('.')
 
             value = self.data
+
             try:
                 for path_index in path_lst:
-                    try:
-                        path_index = int(path_index.replace('$', ''))
-                    except:
-                        pass
-                    value = value[path_index]
-            except:
-                value = ''
-            return value
+                    # Handle list index syntax like $0
+                    if path_index.startswith("$"):
+                        index = int(path_index[1:])
+                        value = value[index]
+                    else:
+                        value = value[path_index]
 
-        # Use re.sub to replace the template variable with its value
+                return str(value)
+
+            except Exception:
+                raise ValueError(f"Invalid template variable: {variable_name}")
+
         parsed_template = re.sub(pattern, replace_variable, self.template)
 
         return parsed_template

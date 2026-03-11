@@ -1,4 +1,5 @@
-/__pycache__
-/.idea
-/_venv
-/Services/__pycache__
+build/
+dist/
+Lib/
+Scripts/
+Services/__pycache__/
