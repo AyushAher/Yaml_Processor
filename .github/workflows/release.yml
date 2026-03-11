@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Trigger on version tags like v1.0.0
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build CLI executable
+        run: |
+          pyinstaller --onefile cli.py --name yaml-runner
+
+      - name: Create release folder
+        run: |
+          mkdir release
+          cp dist/yaml-runner release/
+          cp sample.yaml release/
+          cp requirements.txt release/
+          cp -r Services release/
+
+      - name: Create Windows runner script
+        run: |
+          echo "@echo off" >> release/yaml-runner.bat
+          echo "python cli.py %1" >> release/yaml-runner.bat
+
+      - name: Create Linux runner script
+        run: |
+          echo "#!/bin/bash" >> release/yaml-runner.sh
+          echo "python3 cli.py \$1" >> release/yaml-runner.sh
+          chmod +x release/yaml-runner.sh
+
+      - name: Zip release package
+        run: |
+          zip -r yaml-processor-release.zip release
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            yaml-processor-release.zip
+            dist/yaml-runner
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
