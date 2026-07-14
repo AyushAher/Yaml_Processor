@@ -1,0 +1,17 @@
+name: database-backup
+version: 1
+
+vars:
+  backupDir: ./backups
+  date: $(date +%Y-%m-%d)
+
+databases:
+
+  postgres:
+    host: 192.168.0.5
+    port: 5432
+    user: postgres
+    db: ejbca
+
+steps:
+  - pg_dump -h {{databases.postgres.host}} -p {{databases.postgres.port}} -U {{databases.postgres.user}} {{databases.postgres.db}} -F c -f {{vars.backupDir}}/pg_{{databases.postgres.db}}.dump
